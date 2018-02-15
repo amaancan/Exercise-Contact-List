@@ -13,6 +13,7 @@
 		510F3F6C2031FBE20047C70C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 510F3F6B2031FBE20047C70C /* Assets.xcassets */; };
 		510F3F6F2031FBE20047C70C /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 510F3F6D2031FBE20047C70C /* LaunchScreen.storyboard */; };
 		510F3F772032082F0047C70C /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 510F3F762032082F0047C70C /* Constants.swift */; };
+		510F3F7920352E610047C70C /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 510F3F7820352E610047C70C /* Extensions.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +25,7 @@
 		510F3F6E2031FBE20047C70C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		510F3F702031FBE20047C70C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		510F3F762032082F0047C70C /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		510F3F7820352E610047C70C /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +60,7 @@
 			children = (
 				510F3F642031FBE20047C70C /* AppDelegate.swift */,
 				510F3F662031FBE20047C70C /* ViewController.swift */,
+				510F3F7820352E610047C70C /* Extensions.swift */,
 				510F3F762032082F0047C70C /* Constants.swift */,
 				510F3F682031FBE20047C70C /* Main.storyboard */,
 				510F3F6B2031FBE20047C70C /* Assets.xcassets */,
@@ -142,6 +145,7 @@
 				510F3F672031FBE20047C70C /* ViewController.swift in Sources */,
 				510F3F652031FBE20047C70C /* AppDelegate.swift in Sources */,
 				510F3F772032082F0047C70C /* Constants.swift in Sources */,
+				510F3F7920352E610047C70C /* Extensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
