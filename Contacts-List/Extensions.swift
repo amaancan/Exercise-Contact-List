@@ -9,8 +9,7 @@
 import Foundation
 
 extension Bool {
-    mutating func toggle() -> Bool {
+    mutating func toggle() {
         self = !self
-        return self
     }
 }
