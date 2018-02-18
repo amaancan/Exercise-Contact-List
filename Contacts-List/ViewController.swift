@@ -10,10 +10,11 @@ import UIKit
 
 class ViewController: UITableViewController {
 
+    // NOTE: Model shouldn't be in VC
     var listOfNames = [
-        ExpandableNames(isExpanded: true, names: ["Ayela", "Aera", "Amel", "Aleu", "April", "Aleah"]),
-        ExpandableNames(isExpanded: true, names:  ["Wuda", "Wat", "Wuu", "Woo", "WaUda"]),
-        ExpandableNames(isExpanded: true, names: ["Ma", "Me", "Mel", "Mlu", "Map", "Meah"])
+        ExpandableNames(isExpanded: true, names: ["Ayela", "Aera", "Amel", "Aleu", "April", "Aleah"].map { Contact(name: $0, hasFavourited: false)}),
+        ExpandableNames(isExpanded: true, names:  ["Wuda", "Wat", "Wuu", "Woo", "WaUda"].map { Contact(name: $0, hasFavourited: false)}),
+        ExpandableNames(isExpanded: true, names: ["Ma", "Me", "Mel", "Mlu", "Map", "Meah"].map { Contact(name: $0, hasFavourited: false)})
     ]
     
     var isShowingIndexPaths = false { // flag
@@ -30,17 +31,21 @@ class ViewController: UITableViewController {
         navigationItem.title = "Contacts"
         navigationController?.navigationBar.prefersLargeTitles = true
         
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: Constants.cellID.rawValue) // Registers a class for use in creating new table cells, to tell the table view how to create new cells.
+        tableView.register(ContactCell.self, forCellReuseIdentifier: Constants.cellID.rawValue) // Registers a class for use in creating new table cells, to tell the table view how to create new cells.
     }
     
     @objc func handleShowIndexPath() {
-        //var indexPathsToReload = [IndexPath]() // build this array with all indexPaths
+        var indexPathsToReload = [IndexPath]() // build this array with all indexPaths
         
-        let indexPathsToReload = listOfNames.indices.map { section in
-            listOfNames[section].names.indices.map { row in
-                IndexPath(row: row, section: section)
+        for section in listOfNames.indices {
+            // if section = collapsed, don't incl. it's rows in array to be reloaded to avoid crash
+            if listOfNames[section].isExpanded {
+                for row in listOfNames[section].names.indices {
+                    let indexPath = IndexPath(row: row, section: section)
+                    indexPathsToReload.append(indexPath)
+                }
             }
-            }.flatMap { $0 }
+        }
         
         isShowingIndexPaths.toggle()
         let animationOfReload = isShowingIndexPaths ? UITableViewRowAnimation.right : .left
@@ -77,14 +82,6 @@ class ViewController: UITableViewController {
         } else {
             tableView.deleteRows(at: indexPathsToDelete, with: .fade)
         }
-        
-        
-        //listOfNames[section].isExpanded ?
-             //:
-        //    tableView.insertRows(at: indexPathsToDelete, with: .fade)
-        //listOfNames[section].removeAll() // keep data model updated with view otw crash
-        
-
     }
     
     override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
@@ -100,17 +97,41 @@ class ViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+       
+        //dequeues an existing cell if one is available - cell’s prepareForReuse() - or creates a new one based on the class or nib file you previously registered - cell's init(style:reuseIdentifier:) - and adds it to the table
+        let cell = tableView.dequeueReusableCell(withIdentifier: Constants.cellID.rawValue, for: indexPath) as! ContactCell // Favouriting: step 4 of 5
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: Constants.cellID.rawValue, for: indexPath) //dequeues an existing cell if one is available - cell’s prepareForReuse() - or creates a new one based on the class or nib file you previously registered - cell's init(style:reuseIdentifier:) - and adds it to the table
-        let name = listOfNames[indexPath.section].names[indexPath.row] // IndexPath is used as a vector for referencing arrays within arrays. For example you can represent a path to array[a][b][c] using an IndexPath. e.g. countryList > regionList > cityList The indexpath to the city you selected would include the path to it through the country and region. --- A list of indexes that together represent the path to a specific location in a tree of nested arrays.
+        //Favouriting: step 5 of 5
+        cell.delegate = self // each cell's delegate is this VC; to send fav message
+        
+        let contact = listOfNames[indexPath.section].names[indexPath.row] // IndexPath is used as a vector for referencing arrays within arrays. For example you can represent a path to array[a][b][c] using an IndexPath. e.g. countryList > regionList > cityList The indexpath to the city you selected would include the path to it through the country and region. --- A list of indexes that together represent the path to a specific location in a tree of nested arrays.
+        
         
         if isShowingIndexPaths {
-            cell.textLabel?.text = "Section \(indexPath.section) Row \(indexPath.row) - \(name)"
+            cell.textLabel?.text = "Section \(indexPath.section) Row \(indexPath.row) - \(contact.name)"
         } else {
-            cell.textLabel?.text = name
+            cell.textLabel?.text = contact.name
         }
         
+        // star gets colour based on model's bool value WHEN IT RENDERS... need to render WHEN star is tapped by reloading data for this indexPath
+        cell.accessoryView?.tintColor = contact.hasFavourited ? UIColor.red : .lightGray
+
         return cell
+    }
+    
+    // Favouriting: step 3 of 5
+    func markFavourite(cell: UITableViewCell) {
+        // figure out which cell's star is being tapped
+        guard let indexPathTapped = tableView.indexPath(for: cell) else { return }
+        
+        // change model: toggle bool
+        listOfNames[indexPathTapped.section].names[indexPathTapped.row].hasFavourited =
+            !listOfNames[indexPathTapped.section].names[indexPathTapped.row].hasFavourited
+        
+        // grab contact from model based on location provided by cell's position in tableView since it's organized same heirarchy as model
+        var contact = listOfNames[indexPathTapped.section].names[indexPathTapped.row]
+        cell.accessoryView?.tintColor = contact.hasFavourited ? UIColor.red : .lightGray // update view to match model
+        //tableView.reloadRows(at: [indexPathTapped], with: .automatic) // another way to update view
     }
 }
 
