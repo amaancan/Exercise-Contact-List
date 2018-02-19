@@ -46,7 +46,7 @@ class ViewController: UITableViewController {
                         print(contact.familyName)
                         print(contact.phoneNumbers.first?.value.stringValue ?? "")
                         
-                        // *** CHURN out an array: construct our contact struct for ea. name and put it in array
+                        //*** Churn out an array: construct our contact struct for ea. name and put it in array
                         favouritableContacts.append(FavouritableContact(name: contact.givenName + " " + contact.familyName, hasFavourited: false))
                     })
                     

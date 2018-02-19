@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct ContactsSection {
+struct ExpandableNames {
     var isExpanded: Bool
     var names: [FavouritableContact]
 }
