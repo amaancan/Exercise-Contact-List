@@ -12,11 +12,7 @@ import Contacts
 class ViewController: UITableViewController {
 
     // NOTE: Model shouldn't be in VC
-    var listOfNames = [
-        ExpandableNames(isExpanded: true, names: ["Ayela", "Aera", "Amel", "Aleu", "April", "Aleah"].map { FavouritableContact(name: $0, hasFavourited: false)}),
-        ExpandableNames(isExpanded: true, names:  ["Wuda", "Wat", "Wuu", "Woo", "WaUda"].map { FavouritableContact(name: $0, hasFavourited: false)}),
-        ExpandableNames(isExpanded: true, names: ["Ma", "Me", "Mel", "Mlu", "Map", "Meah"].map { FavouritableContact(name: $0, hasFavourited: false)})
-    ]
+    var listOfNames = [ExpandableNames]() // will fetch data from CNContact API
     
     private func fetchContacts() {
         let store = CNContactStore()
@@ -47,12 +43,17 @@ class ViewController: UITableViewController {
                         print(contact.phoneNumbers.first?.value.stringValue ?? "")
                         
                         //*** Churn out an array: construct our contact struct for ea. name and put it in array
-                        favouritableContacts.append(FavouritableContact(name: contact.givenName + " " + contact.familyName, hasFavourited: false))
+                        
+                        favouritableContacts.append(FavouritableContact(contact: contact, hasFavourited: false))
+                        
+                        DispatchQueue.main.async { // MARK: Q - why?
+                            self.tableView.reloadData()
+                        }
                     })
                     
                     // *** ALL contact structs put into one section. Can split into sections by adding more logic
                     let names = ExpandableNames(isExpanded: true, names: favouritableContacts)
-                    // *** OVERRIDES our the data model; fetched from Contacts app using Apple's API
+                    // *** UPDATE our the data model; fetched from Contacts app using Apple's API
                     self.listOfNames = [names]
                     
                 } catch let error {
@@ -148,23 +149,25 @@ class ViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
        
-        //dequeues an existing cell if one is available - cell’s prepareForReuse() - or creates a new one based on the class or nib file you previously registered - cell's init(style:reuseIdentifier:) - and adds it to the table
+        //dequeues an existing cell if one is available - cell’s prepareForReuse() func - or creates a new one based on the class or nib file you previously registered - cell's init(style:reuseIdentifier:) func - and adds it to the table
         let cell = tableView.dequeueReusableCell(withIdentifier: Constants.cellID.rawValue, for: indexPath) as! ContactCell // Favouriting: step 4 of 5
         
         //Favouriting: step 5 of 5
         cell.delegate = self // each cell's delegate is this VC; to send fav message
         
-        let contact = listOfNames[indexPath.section].names[indexPath.row] // IndexPath is used as a vector for referencing arrays within arrays. For example you can represent a path to array[a][b][c] using an IndexPath. e.g. countryList > regionList > cityList The indexpath to the city you selected would include the path to it through the country and region. --- A list of indexes that together represent the path to a specific location in a tree of nested arrays.
+        let favouritableContact = listOfNames[indexPath.section].names[indexPath.row] // IndexPath is used as a vector for referencing arrays within arrays. For example you can represent a path to array[a][b][c] using an IndexPath. e.g. countryList > regionList > cityList The indexpath to the city you selected would include the path to it through the country and region. --- A list of indexes that together represent the path to a specific location in a tree of nested arrays.
         
         
         if isShowingIndexPaths {
-            cell.textLabel?.text = "Section \(indexPath.section) Row \(indexPath.row) - \(contact.name)"
+            cell.textLabel?.text = "Section \(indexPath.section) Row \(indexPath.row) - \(favouritableContact.contact.givenName)"
         } else {
-            cell.textLabel?.text = contact.name
+            cell.textLabel?.text = favouritableContact.contact.givenName + " " + favouritableContact.contact.familyName
         }
+        cell.textLabel?.font = UIFont.boldSystemFont(ofSize: 15)
+        cell.detailTextLabel?.text = favouritableContact.contact.phoneNumbers.first?.value.stringValue
         
         // star gets colour based on model's bool value WHEN IT RENDERS... need to render WHEN star is tapped by reloading data for this indexPath
-        cell.accessoryView?.tintColor = contact.hasFavourited ? UIColor.red : .lightGray
+        cell.accessoryView?.tintColor = favouritableContact.hasFavourited ? UIColor.red : .lightGray
 
         return cell
     }
@@ -179,7 +182,7 @@ class ViewController: UITableViewController {
             !listOfNames[indexPathTapped.section].names[indexPathTapped.row].hasFavourited
         
         // grab contact from model based on location provided by cell's position in tableView since it's organized same heirarchy as model
-        var contact = listOfNames[indexPathTapped.section].names[indexPathTapped.row]
+        let contact = listOfNames[indexPathTapped.section].names[indexPathTapped.row]
         cell.accessoryView?.tintColor = contact.hasFavourited ? UIColor.red : .lightGray // update view to match model
         //tableView.reloadRows(at: [indexPathTapped], with: .automatic) // another way to update view
     }

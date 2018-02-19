@@ -14,11 +14,11 @@ class ContactCell: UITableViewCell {
     var delegate: ViewController? // reference VC to mark as favourite
     
     override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
-        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        super.init(style: .subtitle, reuseIdentifier: reuseIdentifier)
         
         //make a custom button and set it as the accessoryView - it's a hacky shortcut
         let starbutton = UIButton(type: .system)
-        starbutton.frame = CGRect(x: 0, y: 0, width: 50, height: 50)
+        starbutton.frame = CGRect(x: 0, y: 0, width: 40, height: 40)
         starbutton.setImage(#imageLiteral(resourceName: "star-grey") , for: .normal)
         starbutton.tintColor = .red
         
