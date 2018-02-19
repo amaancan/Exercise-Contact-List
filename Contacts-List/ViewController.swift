@@ -7,15 +7,62 @@
 //
 
 import UIKit
+import Contacts
 
 class ViewController: UITableViewController {
 
     // NOTE: Model shouldn't be in VC
     var listOfNames = [
-        ExpandableNames(isExpanded: true, names: ["Ayela", "Aera", "Amel", "Aleu", "April", "Aleah"].map { Contact(name: $0, hasFavourited: false)}),
-        ExpandableNames(isExpanded: true, names:  ["Wuda", "Wat", "Wuu", "Woo", "WaUda"].map { Contact(name: $0, hasFavourited: false)}),
-        ExpandableNames(isExpanded: true, names: ["Ma", "Me", "Mel", "Mlu", "Map", "Meah"].map { Contact(name: $0, hasFavourited: false)})
+        ExpandableNames(isExpanded: true, names: ["Ayela", "Aera", "Amel", "Aleu", "April", "Aleah"].map { FavouritableContact(name: $0, hasFavourited: false)}),
+        ExpandableNames(isExpanded: true, names:  ["Wuda", "Wat", "Wuu", "Woo", "WaUda"].map { FavouritableContact(name: $0, hasFavourited: false)}),
+        ExpandableNames(isExpanded: true, names: ["Ma", "Me", "Mel", "Mlu", "Map", "Meah"].map { FavouritableContact(name: $0, hasFavourited: false)})
     ]
+    
+    private func fetchContacts() {
+        let store = CNContactStore()
+        
+        //The completion handler is called on an arbitrary queue. It is recommended that you use CNContactStore instance methods in this completion handler instead of the UI main thread.
+        store.requestAccess(for: .contacts) { (isGrantedAccess, error) in
+            if let error = error {
+                print ("Failed to request access:", error)
+                return
+            }
+            
+            if isGrantedAccess {
+                print("isGrantedAccess = TRUE")
+                let keys = [CNContactGivenNameKey, CNContactFamilyNameKey, CNContactPhoneNumbersKey]
+        
+                // An object that defines fetching options to use while fetching contacts. You need at least one contact property key to fetch a contact’s properties. Use this class with the enumerateContacts(with:usingBlock:) method to execute the contact fetch request.
+                // keyToFetch: An ARRAY OF CONTACT PROPERTY KEYS and/or key descriptors from contacts objects to be fetched in the returned contacts
+                let request = CNContactFetchRequest(keysToFetch: keys as [CNKeyDescriptor])
+                
+                do {
+                    var favouritableContacts = [FavouritableContact]()
+                    
+                    //fetchRequest: Specifies the search criteria.
+                    //block: Called for each contact matching the fetch request.
+                    try store.enumerateContacts(with: request, usingBlock: { (contact, stopEnumeratingPointer) in
+                        print(contact.givenName)
+                        print(contact.familyName)
+                        print(contact.phoneNumbers.first?.value.stringValue ?? "")
+                        
+                        // *** CHURN out an array: construct our contact struct for ea. name and put it in array
+                        favouritableContacts.append(FavouritableContact(name: contact.givenName + " " + contact.familyName, hasFavourited: false))
+                    })
+                    
+                    // *** ALL contact structs put into one section. Can split into sections by adding more logic
+                    let names = ExpandableNames(isExpanded: true, names: favouritableContacts)
+                    // *** OVERRIDES our the data model; fetched from Contacts app using Apple's API
+                    self.listOfNames = [names]
+                    
+                } catch let error {
+                    print("Failed to enumerateContacts:", error)
+                }
+            } else {
+                print("isGrantedAccess = NO GO :(")
+            }
+        }
+    }
     
     var isShowingIndexPaths = false { // flag
         didSet {
@@ -25,6 +72,9 @@ class ViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        fetchContacts()
+        
         // TODO: refactor tableView setUp
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Show IndexPath", style: .plain, target: self, action: #selector(handleShowIndexPath))
         

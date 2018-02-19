@@ -8,12 +8,12 @@
 
 import Foundation
 
-struct ExpandableNames {
+struct ContactsSection {
     var isExpanded: Bool
-    var names: [Contact]
+    var names: [FavouritableContact]
 }
 
-struct Contact {
+struct FavouritableContact {
     let name: String
     var hasFavourited: Bool
 }
