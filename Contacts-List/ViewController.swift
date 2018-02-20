@@ -50,11 +50,17 @@ class ViewController: UITableViewController {
                             self.tableView.reloadData()
                         }
                     })
+                    // *** ALL contact structs sorted alphabetically
+                    let groupedDictionaryOfFavouritableContacts = Dictionary(grouping: favouritableContacts, by: { (favouritableContact) -> Character in
+                        return favouritableContact.contact.givenName.first ?? " "
+                    })
                     
-                    // *** ALL contact structs put into one section. Can split into sections by adding more logic
-                    let names = ExpandableNames(isExpanded: true, names: favouritableContacts)
-                    // *** UPDATE our the data model; fetched from Contacts app using Apple's API
-                    self.listOfNames = [names]
+                    // *** UPDATE the data model; fetched from Contacts app using Apple's API
+                    let keys = groupedDictionaryOfFavouritableContacts.keys.sorted()
+                    
+                    keys.forEach({ (key) in
+                        self.listOfNames.append(ExpandableNames(isExpanded: true, names: groupedDictionaryOfFavouritableContacts[key]!))
+                    })
                     
                 } catch let error {
                     print("Failed to enumerateContacts:", error)
